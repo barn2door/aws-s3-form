@@ -101,7 +101,7 @@ class AwsS3Form extends require( "mpbasic" )()
 				"Policy": _policyB64
 				"X-Amz-Signature": _signature.toString()
 
-		if options.redirectUrlTemplate? || @config.redirectUrlTemplate?
+		if _.isString(options.redirectUrlTemplate) || _.isString(@config.redirectUrlTemplate)
 			data.fields.success_action_redirect = @_redirectUrl( options.redirectUrlTemplate, filename: filename )
 		else
 			data.fields.success_action_status = @_successActionStatus( options.successActionStatus )
@@ -222,29 +222,6 @@ class AwsS3Form extends require( "mpbasic" )()
 			return tmpl( data )
 		else
 			return @_handleError( null, "EINVALIDREDIR" )
-
-	_successActionStatus: ( successActionStatus = @config.successActionStatus )=>
-		if successActionStatus not in @validation.successActionStatus
-			return @_handleError( null, "EINVALIDSTATUS", val: successActionStatus )
-		return successActionStatus
-
-	###
-	## _successActionStatus
-
-	`AwsS3Form._successActionStatus( status )`
-
-	Gets the HTTP status code that AWS will return if a redirectUrlTemplate is not defined.
-
-	@param { Number } status The status code that should be set on successful upload
-
-	@return { Number } A redirect url
-
-	@api private
-	###
-	_successActionStatus: ( status = @config.successActionStatus )=>
-		if status not in @validation.successActionStatus
-			return @_handleError( null, "EINVALIDSTATUS", val: status )
-		return status
 
 	###
 	## _successActionStatus
@@ -378,6 +355,7 @@ class AwsS3Form extends require( "mpbasic" )()
 		"EINVALIDACL": [ 500, "The given acl `<%= val %>` is not valid. Only `#{@validation.acl.join('`, `')}` is allowed." ]
 		"ENOREDIR": [ 500, "You have to define a `redirectUrlTemplate` as config or `.create()` option." ]
 		"EINVALIDREDIR": [ 500, "Only a string or function is valid as redirect url." ]
+		"EINVALIDSTATUS": [ 500, "Invalid success status `<%= val %>`. Must be 200, 201 or 204."]
 
 
 #export this class
